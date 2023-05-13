@@ -264,7 +264,7 @@ Object::check(map_type::const_iterator itr, state_type t) const {
 inline void
 Object::check_throw(state_type t) const {
   if (t != type())
-    throw bencode_error("Wrong object type.");
+    throw bencode_error("[check_throw] Wrong object type.");
 }
 
 } // namespace torrent

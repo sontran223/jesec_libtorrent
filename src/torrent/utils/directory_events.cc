@@ -8,6 +8,7 @@
 
 #ifdef LT_HAVE_INOTIFY
 #include <sys/inotify.h>
+#include <iostream>
 #endif
 
 #include "manager.h"
@@ -86,6 +87,7 @@ directory_events::notify_on(const std::string& path,
   if ((flags & flag_on_removed))
     in_flags |= (IN_DELETE | IN_MOVED_FROM);
 
+  std::cout << "XXX 0:" << in_flags << "\n" << std::endl;
   int result = inotify_add_watch(m_fileDesc, path.c_str(), in_flags);
 
   if (result == -1)
@@ -116,27 +118,35 @@ directory_events::event_read() {
   if ((size_t)result < sizeof(struct inotify_event))
     return;
 
-  auto event = (struct inotify_event*)buffer;
+  try {
+    auto event = (struct inotify_event*)buffer;
 
-  while (event + 1 <= (struct inotify_event*)(buffer + result)) {
-    char* next_event = (char*)event + sizeof(struct inotify_event) + event->len;
+    while (event + 1 <= (struct inotify_event*)(buffer + result)) {
+      char* next_event = (char*)event + sizeof(struct inotify_event) + event->len;
 
-    if (event->len == 0 || next_event > buffer + 2048)
-      return;
+      if (event->len == 0 || next_event > buffer + 2048)
+        return;
 
-    auto itr = std::find_if(m_wd_list.begin(),
-                            m_wd_list.end(),
-                            [ewd = event->wd](const watch_descriptor& wd) {
-                              return wd.compare_desc(ewd);
-                            });
+      auto itr = std::find_if(m_wd_list.begin(),
+                              m_wd_list.end(),
+                              [ewd = event->wd](const watch_descriptor& wd) {
+                                return wd.compare_desc(ewd);
+                              });
 
-    if (itr != m_wd_list.end()) {
-      std::string sname(event->name);
-      if ((sname.substr(sname.find_last_of('.')) == ".torrent"))
-        itr->slot(itr->path + event->name);
+      if (itr != m_wd_list.end()) {
+        std::string sname(event->name);
+        std::cout << "XXX 1\n" << std::endl;
+        std::cout << sname << std::endl;;
+        if ((sname.substr(sname.find_last_of('.')) == ".torrent"))
+          itr->slot(itr->path + event->name);
+
+        std::cout << "XXX 2\n" << std::endl;;
+      }
+
+      event = (struct inotify_event*)(next_event);
     }
-
-    event = (struct inotify_event*)(next_event);
+  } catch (std::exception& e) {
+    throw input_error("Error handling inotify event.");
   }
 #endif
 }

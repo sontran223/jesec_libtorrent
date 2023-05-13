@@ -14,6 +14,8 @@
 
 namespace torrent {
 
+#define stringify( name ) #name
+
 class LIBTORRENT_EXPORT Object {
 public:
   using value_type    = int64_t;
@@ -439,12 +441,27 @@ public:
   void swap_same_type(Object& left, Object& right);
 
 private:
+
   inline bool check(map_type::const_iterator itr, type_type t) const {
     return itr != _map().end() && itr->second.type() == t;
   }
   inline void check_throw(type_type t) const {
+    type_type check_type = type();
+    const char* convert_enum[] =
+    {
+      stringify( TYPE_NONE ),
+      stringify( TYPE_RAW_BENCODE ),
+      stringify( TYPE_RAW_STRING ),
+      stringify( TYPE_RAW_LIST ),
+      stringify( TYPE_RAW_MAP ),
+      stringify( TYPE_VALUE ),
+      stringify( TYPE_STRING ),
+      stringify( TYPE_LIST ),
+      stringify( TYPE_MAP ),
+      stringify( TYPE_DICT_KEY )
+    };
     if (t != type())
-      throw bencode_error("Wrong object type.");
+      throw bencode_error(std::string("[include check_throw] Wrong object type ") + convert_enum[t] + " != " + convert_enum[check_type] + ".");
   }
 
   template<typename T>

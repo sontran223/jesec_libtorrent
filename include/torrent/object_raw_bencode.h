@@ -169,7 +169,7 @@ public:
 inline std::string
 raw_bencode::as_value_string() const {
   if (!is_value())
-    throw bencode_error("Wrong object type.");
+    throw bencode_error("Wrong object type - not value string.");
 
   return std::string(data() + 1, size() - 2);
 }
@@ -177,7 +177,7 @@ raw_bencode::as_value_string() const {
 inline raw_string
 raw_bencode::as_raw_string() const {
   if (!is_raw_string())
-    throw bencode_error("Wrong object type.");
+    throw bencode_error("Wrong object type - not raw string.");
 
   const_iterator itr = std::find(begin(), end(), ':');
 
@@ -190,7 +190,7 @@ raw_bencode::as_raw_string() const {
 inline raw_list
 raw_bencode::as_raw_list() const {
   if (!is_raw_list())
-    throw bencode_error("Wrong object type.");
+    throw bencode_error("Wrong object type - not raw list.");
 
   return raw_list(m_data + 1, m_size - 2);
 }
@@ -198,7 +198,7 @@ raw_bencode::as_raw_list() const {
 inline raw_map
 raw_bencode::as_raw_map() const {
   if (!is_raw_map())
-    throw bencode_error("Wrong object type.");
+    throw bencode_error("Wrong object type - not raw map.");
 
   return raw_map(m_data + 1, m_size - 2);
 }
